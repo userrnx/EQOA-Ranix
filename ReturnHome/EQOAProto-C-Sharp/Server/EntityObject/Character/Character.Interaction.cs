@@ -153,21 +153,24 @@ namespace ReturnHome.Server.EntityObject.Player
             }
         }
 
-        /* This is buying item code but should be close to -- if not enough money, else remove money.
-           UPDATE THE COST ALGORITHM, This is a placeholder */
+        // This is buying item code but should be close to -- if not enough money, else remove money.
+         
         public void RepairItem(byte itemSlot, int itemQty, uint targetNPC)
         {
-            if (Inventory.Exists(itemSlot, itemQty, out Item item))
-            {              
-                if (item.RemainingHP < item.Maxhp)
+            if (Inventory.Exists(itemSlot))
+            {
+                if (Inventory.UpdateQuantity(itemSlot, itemQty, out Item item))
+                
                     {
-                      if (Inventory.Tunar < (item.ItemCost / 10))
+                        if (item.RemainingHP < item.Maxhp)
+                        {
+                            if (Inventory.Tunar < (item.ItemCost * (1 - (item.RemainingHP / item.Maxhp))))
                             {
                                 ChatMessage.DistributeSpecificMessageAndColor(((Character)this).characterSession, $"You can't afford that.", new byte[] { 0xFF, 0x00, 0x00, 0x00 });
                             }
-                      else
+                            else
                             {
-                                Inventory.RemoveTunar((int)(item.ItemCost / 10));
+                                Inventory.RemoveTunar((int)(item.ItemCost * (1 - (item.RemainingHP / item.Maxhp))));
 
                                 //Adjust player tunar
                                 ServerUpdatePlayerTunar.UpdatePlayerTunar(((Character)this).characterSession, Inventory.Tunar);
@@ -176,8 +179,11 @@ namespace ReturnHome.Server.EntityObject.Player
 
                                 return;
                             }
-                    }     
+                        }
+                    }
+                
             }
+            
         }
 
         public static void AddQuestLog(Session session, uint questNumber, string questText)
